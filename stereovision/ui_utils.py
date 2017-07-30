@@ -41,7 +41,6 @@ from functools import partial
 import os
 
 import cv2
-from progressbar import ProgressBar, Percentage, Bar
 from stereovision.calibration import StereoCalibrator
 from stereovision.exceptions import BadBlockMatcherArgumentError
 
@@ -92,20 +91,14 @@ def calibrate_folder(args):
     height, width = cv2.imread(args.input_files[0]).shape[:2]
     calibrator = StereoCalibrator(args.rows, args.columns, args.square_size,
                                   (width, height))
-    progress = ProgressBar(maxval=len(args.input_files),
-                          widgets=[Bar("=", "[", "]"),
-                          " ", Percentage()])
     print("Reading input files...")
-    progress.start()
     while args.input_files:
         left, right = args.input_files[:2]
         img_left, im_right = cv2.imread(left), cv2.imread(right)
         calibrator.add_corners((img_left, im_right),
                                show_results=args.show_chessboards)
         args.input_files = args.input_files[2:]
-        progress.update(progress.maxval - len(args.input_files))
 
-    progress.finish()
     print("Calibrating cameras. This can take a while.")
     calibration = calibrator.calibrate_cameras()
     avg_error = calibrator.check_calibration(calibration)
